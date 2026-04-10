@@ -1,8 +1,7 @@
 # Persona 5 Themed Portfolio
 
-A highly stylized personal portfolio website heavily inspired by the UI and aesthetics of **Persona 5** (originally started as a Persona 3 theme and recently evolved). Built with React and Vite.
-
-## 🌟 Highlights
+A highly stylized personal portfolio website heavily inspired by the UI and aesthetics of **Persona 5**
+## Highlights
 
 - **Persona 5 UI/UX Aesthetics**: Features custom "wiggle polygon" animations, dynamic text strokes, and the iconic red, black, white, and cyan color palette.
 - **Immersive Experience**: Runs a continuous ambient background video (`main1.mp4`) and features a persistent, toggleable Background Music (BGM) player with volume control.
@@ -10,7 +9,7 @@ A highly stylized personal portfolio website heavily inspired by the UI and aest
 - **Keyboard Navigation**: Fully supports traversing the main menu and certain overlays using keyboard arrow keys and `Enter/Escape`, mimicking the actual game controls.
 - **Custom Page Transitions**: Smooth, multi-layered "stripe" transition animations when navigating between routes.
 
-## 🛠️ Tech Stack & Dependencies
+## Tech Stack & Dependencies
 
 This project runs on a modern React ecosystem.
 
@@ -25,7 +24,7 @@ This project runs on a modern React ecosystem.
 - `@vitejs/plugin-react` - Vite plugin for React fast refresh.
 - `eslint` (^9.39.4) & plugins - Code quality and linting.
 
-## 🚀 How to Run Locally
+## How to Run Locally
 
 1. **Install dependencies:**
    ```bash
@@ -42,7 +41,7 @@ This project runs on a modern React ecosystem.
    npm run build
    ```
 
-## 📂 Project Structure Overview
+## Project Structure Overview
 
 - `src/App.jsx`: The root component managing the React Router, background video layering, and global Background Music player.
 - `src/P5Menu.jsx`: The main interactive menu with the signature CSS polygon wiggle keyframes and SFX logic.
