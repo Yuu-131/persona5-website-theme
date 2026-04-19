@@ -114,7 +114,8 @@ function BackgroundMusic() {
   }, [isPlaying])
 
   useEffect(() => {
-    const shouldAutoStart = localStorage.getItem(BGM_STATE_KEY) === '1'
+    const saved = localStorage.getItem(BGM_STATE_KEY)
+    const shouldAutoStart = saved === null || saved === '1'
     if (!shouldAutoStart) return
 
     autoStartRef.current = true
