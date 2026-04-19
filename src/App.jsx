@@ -7,8 +7,12 @@ import PageTransition from './PageTransition'
 import Socials from './Socials'
 import AboutMe from './AboutMe'
 import SideProjectsPage from './SideProjectsPage'
+import AdminPanel from './admin/AdminPanel'
 import mainVideo from './assets/main1.mp4'
+import { prefetchContent } from './utils/useContent.js'
 import './App.css'
+
+prefetchContent()
 
 const BGM_STATE_KEY = 'p5-bgm-enabled'
 const BGM_VOLUME_KEY = 'p5-bgm-volume'
@@ -225,6 +229,7 @@ function AnimatedRoutes() {
         <Route path="/sideproj" element={
           <PageTransition><SideProjectsPage /></PageTransition>
         } />
+        <Route path="/admin" element={<AdminPanel />} />
       </Routes>
     </AnimatePresence>
   )

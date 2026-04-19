@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { playSelectSound } from "./utils/audio.js";
+import { useContent } from "./utils/useContent.js";
 import { useNavigate } from "react-router-dom";
 import char1 from "./assets/char1.png";
 import char2 from "./assets/char2.png";
@@ -14,53 +15,24 @@ import mainf from "./assets/mainf.jpeg";
 const CHARS = [char1, char2, char3];
 const MAIN_IMAGES = [mainm, mainm2, mainf];
 
-const REVEAL_CONTENT = [
+const DEFAULT_LABELS = ["ABOUT ME", "EDUCATION", "LANGUAGES"];
+
+const DEFAULT_REVEAL = [
   {
     upper: ["name: Francisco", "age: 16 years ", "location: Brazil"],
     lower: "3rd year technical high school student - IT",
   },
   {
-    upper: [
-      "I study at IFPB Campus Itaporanga,",
-      "taking the technical course in computer science.",
-    ],
+    upper: ["I study at IFPB Campus Itaporanga,", "taking the technical course in computer science."],
     lower: "Java | JavaScript | Web Development",
   },
   {
-    upper: [
-      "Focused in backend development",
-      "Driven by cognition.",
-    ],
+    upper: ["Focused in backend development", "Driven by cognition."],
     lower: "github: github.com/ffaneto",
   },
 ];
 
-const ITEMS = [
-  {
-    id: "about", label: "ABOUT ME", handle: "@ffaneto", href: "https://github.com/ffaneto", icon: "👤", barIcon: icon1, bars: 1, newBars: [0], counts: ["16"],
-    links: ["github.com/ffaneto"],
-    stats: [
-      { tag: "AGE", value: "16", color: "#d92323" },
-      { tag: "YEAR", value: "3rd IFPB",  color: "#7b7b7b" },
-    ],
-  },
-  {
-    id: "fun", label: "EDUCATION", handle: "@ffaneto", href: "https://github.com/ffaneto", icon: "🏫", barIcon: icon2, bars: 2, newBars: [0, 1], counts: ["IFPB", "TECH"],
-    links: ["ifpb/itaporanga", "it/course"],
-    stats: [
-      { tag: "MAJOR", value: "IT", color: "#d92323" },
-      { tag: "CAMPUS", value: "ITAPORANGA",  color: "#732424" },
-    ],
-  },
-  {
-    id: "weird", label: "LANGUAGES", handle: "@ffaneto", href: "https://github.com/ffaneto", icon: "💻", barIcon: icon3, bars: 3, newBars: [0, 1, 2], counts: ["JAVA", "JS", "WEB"],
-    links: ["learning/java", "learning/javascript", "web/development"],
-    stats: [
-      { tag: "FAV", value: "JAVA", color: "#ffffff" },
-      { tag: "FAV", value: "JS",  color: "#d92323" },
-    ],
-  },
-];
+const ITEMS_COUNT = 3;
 
 export default function AboutMe() {
   const [active, setActive]   = useState(0);
@@ -68,6 +40,21 @@ export default function AboutMe() {
   const isFirstRenderAudio = useRef(true);
   const [revealed, setRevealed] = useState(false);
   const navigate = useNavigate();
+  const { get } = useContent();
+
+  const getRevealContent = (idx) => ({
+    upper: [
+      get(`about.reveal.${idx}.upper.0`, DEFAULT_REVEAL[idx]?.upper[0] ?? ''),
+      get(`about.reveal.${idx}.upper.1`, DEFAULT_REVEAL[idx]?.upper[1] ?? ''),
+      get(`about.reveal.${idx}.upper.2`, DEFAULT_REVEAL[idx]?.upper[2] ?? ''),
+    ].filter(Boolean),
+    lower: get(`about.reveal.${idx}.lower`, DEFAULT_REVEAL[idx]?.lower ?? ''),
+  });
+
+  const items = Array.from({ length: ITEMS_COUNT }, (_, i) => ({
+    id: ['about', 'fun', 'weird'][i],
+    label: get(`about.items.${i}.label`, DEFAULT_LABELS[i]),
+  }));
 
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 60);
@@ -85,7 +72,7 @@ export default function AboutMe() {
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === "ArrowUp") setActive(i => Math.max(0, i - 1));
-      if (e.key === "ArrowDown") setActive(i => Math.min(ITEMS.length - 1, i + 1));
+      if (e.key === "ArrowDown") setActive(i => Math.min(ITEMS_COUNT - 1, i + 1));
       if (e.key === "Enter") setRevealed(true);
       if (e.key === "ArrowRight") setRevealed(true);
       if (e.key === "ArrowLeft") {
@@ -105,11 +92,11 @@ export default function AboutMe() {
       {revealed && (
         <div key={`panel-${active}`} className={`sc-reveal-panel${mounted ? " mounted" : ""}`}>
           <div className="sc-reveal-upper-bar">
-            {REVEAL_CONTENT[active].upper.map((line) => (
+            {getRevealContent(active).upper.map((line) => (
               <div className="sc-reveal-upper-line" key={line}>{line}</div>
             ))}
           </div>
-          <div className="sc-reveal-lower-bar">{REVEAL_CONTENT[active].lower}</div>
+          <div className="sc-reveal-lower-bar">{getRevealContent(active).lower}</div>
         </div>
       )}
       {revealed && (
@@ -611,7 +598,7 @@ export default function AboutMe() {
       `}</style>
 
       <div className="sc-root" role="navigation">
-        {ITEMS.map((item, i) => (
+        {items.map((item, i) => (
           <div
             key={item.id}
             className={`sc-bar-outer${active === i ? " active" : ""}${mounted ? " mounted" : ""}`}

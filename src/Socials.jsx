@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { playSelectSound } from "./utils/audio.js";
+import { useContent } from "./utils/useContent.js";
 import { useNavigate } from "react-router-dom";
 import char1 from "./assets/char1.png";
 import char2 from "./assets/char2.png";
@@ -17,9 +18,9 @@ const ROLES = [
   { text: "PARTY",  color: "#d92323", bg: "rgba(217,35,35,0.12)", border: "rgba(217,35,35,0.5)" },
 ];
 
-const ITEMS = [
+const DEFAULT_ITEMS = [
   {
-    id: "github", label: "GITHUB", handle: "@ffaneto", href: "https://github.com/ffaneto?tab=repositories", icon: "💻", barIcon: icon1, bars: 5, newBars: [0], counts: ["SALES", "SITE","CALC", "EXERCS", "NELIO", "MORE"],
+    id: "github", label: "GITHUB", href: "https://github.com/ffaneto?tab=repositories", icon: "💻", barIcon: icon1, bars: 6, newBars: [0], counts: ["SALES", "SITE","CALC", "EXERCS", "NELIO", "MORE"],
     links: ["github.com/ffaneto/gestao-vendas-3-info-vesp-1.0","github.com/ffaneto/persona5-website", "github.com/ffaneto/calculadora-arranjo-combinacao-permutacao-java", "github.com/ffaneto/questoes-funcoes-javascript", "github.com/ffaneto/curso-nelio-alves", "github.com/ffaneto/outras-questoes-nelio-alves"],
     stats: [
       { tag: "USR", value: "ffaneto", color: "#7b7b7b" },
@@ -27,7 +28,7 @@ const ITEMS = [
     ],
   },
   {
-    id: "instagram", label: "INSTAGRAM", handle: "@ffaneto__", href: "https://instagram.com/ffaneto__", icon: "📷", barIcon: icon2, bars: 2, newBars: [1], counts: ["POSTS", "REELS"],
+    id: "instagram", label: "INSTAGRAM", href: "https://instagram.com/ffaneto__", icon: "📷", barIcon: icon2, bars: 2, newBars: [1], counts: ["POSTS", "REELS"],
     links: ["instagram.com/ffaneto__", "instagram.com"],
     stats: [
       { tag: "SOCIAL", value: "PICS", color: "#d92323" },
@@ -35,7 +36,7 @@ const ITEMS = [
     ],
   },
   {
-    id: "email", label: "EMAIL", handle: "misteryshadbr@gmail.com", href: "mailto:misteryshadbr@gmail.com", icon: "✉️", barIcon: icon3, bars: 3, newBars: [2], counts: ["INBOX", "OUTBOX", "SPAM"],
+    id: "email", label: "EMAIL", href: "mailto:misteryshadbr@gmail.com", icon: "✉️", barIcon: icon3, bars: 3, newBars: [2], counts: ["INBOX", "OUTBOX", "SPAM"],
     links: ["mailto:misteryshadbr@gmail.com", "gmail.com", "mail.google.com"],
     stats: [
       { tag: "CONTACT", value: "DIRECT", color: "#ffffff" },
@@ -49,8 +50,16 @@ export default function Socials() {
   const [mounted, setMounted]             = useState(false);
   const isFirstRenderAudio = useRef(true);
   const [activeInfoBar, setActiveInfoBar] = useState(0);
-  const [focus, setFocus]                 = useState("left"); // "left" | "right"
+  const [focus, setFocus]                 = useState("left");
   const navigate = useNavigate();
+  const { get } = useContent();
+
+  const items = DEFAULT_ITEMS.map((item, i) => ({
+    ...item,
+    label: get(`socials.items.${i}.label`, item.label),
+    href: get(`socials.items.${i}.href`, item.href),
+    links: item.links.map((lnk, j) => get(`socials.items.${i}.links.${j}`, lnk)),
+  }));
 
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 60);
@@ -85,15 +94,15 @@ export default function Socials() {
 
       if (focus === "left") {
         if (isUp)    setActive(i => Math.max(0, i - 1));
-        if (isDown)  setActive(i => Math.min(ITEMS.length - 1, i + 1));
+        if (isDown)  setActive(i => Math.min(DEFAULT_ITEMS.length - 1, i + 1));
         if (e.key === "ArrowLeft")  { setFocus("right"); setActiveInfoBar(0); }
-        if (e.key === "Enter")      window.open(ITEMS[active].href, "_blank");
+        if (e.key === "Enter")      window.open(items[active].href, "_blank");
       } else {
-        const barCount = ITEMS[active].bars;
+        const barCount = items[active].bars;
         if (isUp)   setActiveInfoBar(i => Math.max(0, i - 1));
         if (isDown) setActiveInfoBar(i => Math.min(barCount - 1, i + 1));
         if (e.key === "ArrowRight") setFocus("left");
-        if (e.key === "Enter")     window.open(getLink(ITEMS[active].links[activeInfoBar]), "_blank");
+        if (e.key === "Enter")     window.open(getLink(items[active].links[activeInfoBar]), "_blank");
       }
       if ((e.key === "ArrowRight" && focus === "left") || e.key === "Escape" || e.key === "Backspace") navigate(-1);
     };
@@ -574,7 +583,7 @@ export default function Socials() {
       `}</style>
 
       <div className="sc-root" role="navigation">
-        {ITEMS.map((item, i) => (
+        {items.map((item, i) => (
           <div
             key={item.id}
             className={`sc-bar-outer${active === i ? " active" : ""}${mounted ? " mounted" : ""}`}
@@ -627,19 +636,19 @@ export default function Socials() {
         <div className="sc-right-nav" key={active}>
           <span className="sc-nav-arrow left">◄</span>
           <span className="sc-nav-btn">LB</span>
-          <span className="sc-nav-label">{ITEMS[active].label}</span>
+          <span className="sc-nav-label">{items[active].label}</span>
           <span className="sc-nav-btn">RB</span>
           <span className="sc-nav-arrow right">►</span>
         </div>
       )}
 
-      {mounted && Array.from({ length: ITEMS[active].bars }).map((_, i) => (
+      {mounted && Array.from({ length: items[active].bars }).map((_, i) => (
         <div
           className={`sc-info-bar-wrap${activeInfoBar === i ? " selected" : ""}`}
           key={`bar-${active}-${i}`}
           style={{ top: `${155 + i * 52}px`, animationDelay: `${i * 50}ms` }}
           onClick={() => {
-            const link = ITEMS[active].links[i];
+            const link = items[active].links[i];
             const url = link.startsWith("http") || link.startsWith("mailto") ? link : "https://" + link;
             window.open(url, "_blank");
             setActiveInfoBar(i);
@@ -650,16 +659,16 @@ export default function Socials() {
             setFocus("right");
           }}
         >
-          {ITEMS[active].newBars.includes(i) && (
+          {items[active].newBars.includes(i) && (
             <img className="sc-info-bar-new" src={newsign} alt="" />
           )}
           <div className="sc-info-bar">
-            <div className={`sc-info-bar-icon-wrap${ITEMS[active].id === "email" ? " email" : ""}`}>
-              <img className="sc-info-bar-icon" src={ITEMS[active].barIcon} alt="" />
+            <div className={`sc-info-bar-icon-wrap${items[active].id === "email" ? " email" : ""}`}>
+              <img className="sc-info-bar-icon" src={items[active].barIcon} alt="" />
             </div>
-            <span className="sc-info-bar-text">{ITEMS[active].links[i].slice(0, 10)}...</span>
+            <span className="sc-info-bar-text">{items[active].links[i].slice(0, 10)}...</span>
             <span className="sc-info-bar-box">VIEWS</span>
-            <span className="sc-info-bar-count">{ITEMS[active].counts[i]}</span>
+            <span className="sc-info-bar-count">{items[active].counts[i]}</span>
           </div>
         </div>
       ))}

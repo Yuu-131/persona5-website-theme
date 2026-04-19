@@ -1,8 +1,9 @@
 import { useEffect, useState, useRef } from "react";
 import { playSelectSound } from "./utils/audio.js";
+import { useContent } from "./utils/useContent.js";
 import { useNavigate } from "react-router-dom";
 
-const ITEMS = [
+const DEFAULT_ITEMS = [
   {
     id: "gestao-vendas",
     title: "SALES MANAGEMENT",
@@ -53,6 +54,15 @@ export default function SideProjectsPage() {
   const [active, setActive] = useState(0);
   const [mounted, setMounted] = useState(false);
   const isFirstRenderAudio = useRef(true);
+  const { get } = useContent();
+
+  const items = DEFAULT_ITEMS.map((item, i) => ({
+    ...item,
+    title: get(`sideprojects.items.${i}.title`, item.title),
+    stack: get(`sideprojects.items.${i}.stack`, item.stack),
+    summary: get(`sideprojects.items.${i}.summary`, item.summary),
+    href: get(`sideprojects.items.${i}.href`, item.href),
+  }));
 
   useEffect(() => {
     if (isFirstRenderAudio.current) {
@@ -70,8 +80,8 @@ export default function SideProjectsPage() {
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === "ArrowUp") setActive((i) => Math.max(0, i - 1));
-      if (e.key === "ArrowDown") setActive((i) => Math.min(ITEMS.length - 1, i + 1));
-      if (e.key === "Enter") window.open(ITEMS[active].href, "_blank", "noopener,noreferrer");
+      if (e.key === "ArrowDown") setActive((i) => Math.min(DEFAULT_ITEMS.length - 1, i + 1));
+      if (e.key === "Enter") window.open(items[active].href, "_blank", "noopener,noreferrer");
       if (e.key === "ArrowLeft" || e.key === "Escape" || e.key === "Backspace") navigate(-1);
     };
 
@@ -228,7 +238,7 @@ export default function SideProjectsPage() {
       <div className="sp-shell">
         <div className="sp-left">
           <div className={`sp-title${mounted ? " mounted" : ""}`}>PROJECT LOG</div>
-          {ITEMS.map((item, index) => (
+          {items.map((item, index) => (
             <div
               key={item.id}
               className={`sp-item${active === index ? " active" : ""}${mounted ? " mounted" : ""}`}
@@ -244,9 +254,9 @@ export default function SideProjectsPage() {
 
         <div className="sp-right">
           <div className="sp-tag">NEW SECTION</div>
-          <div className="sp-right-title">{ITEMS[active].title}</div>
-          <div className="sp-right-summary">{ITEMS[active].summary}</div>
-          <div className="sp-link">OPEN LINK: {ITEMS[active].href.replace("https://", "")}</div>
+          <div className="sp-right-title">{items[active].title}</div>
+          <div className="sp-right-summary">{items[active].summary}</div>
+          <div className="sp-link">OPEN LINK: {items[active].href.replace("https://", "")}</div>
         </div>
       </div>
 

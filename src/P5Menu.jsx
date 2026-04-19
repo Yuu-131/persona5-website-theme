@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { playSelectSound } from "./utils/audio.js";
+import { useContent } from "./utils/useContent.js";
 
-const ITEMS = [
-  { id: "about",   label: "ABOUT ME",      page: "about",   fontSize: 64, offsetX: 0,  offsetY: 0,  skew: -6,  skewY: 10  },
-  { id: "resume",  label: "RESUME",        page: "resume",  fontSize: 52, offsetX: 24, offsetY: 50,  skew: -11, skewY: -10 },
-  { id: "github",  label: "GITHUB LINK",   page: "github",  fontSize: 54, offsetX: 10, offsetY: 28,  skew: 0, skewY: -4  },
-  { id: "socials", label: "SOCIALS",       page: "socials", fontSize: 59, offsetX: 19, offsetY: 30,  skew: -3,  skewY: 5   },
-  { id: "sideproj",label: "SIDE PROJECTS", page: "sideproj",fontSize: 45, offsetX: 12, offsetY: 28,  skew: -4,  skewY: 7   },
+const DEFAULT_ITEMS = [
+  { id: "about",   page: "about",   fontSize: 64, offsetX: 0,  offsetY: 0,  skew: -6,  skewY: 10  },
+  { id: "resume",  page: "resume",  fontSize: 52, offsetX: 24, offsetY: 50,  skew: -11, skewY: -10 },
+  { id: "github",  page: "github",  fontSize: 54, offsetX: 10, offsetY: 28,  skew: 0, skewY: -4  },
+  { id: "socials", page: "socials", fontSize: 59, offsetX: 19, offsetY: 30,  skew: -3,  skewY: 5   },
+  { id: "sideproj",page: "sideproj",fontSize: 45, offsetX: 12, offsetY: 28,  skew: -4,  skewY: 7   },
 ];
 
 const CLIP_SHAPES = [
@@ -17,6 +18,8 @@ const CLIP_SHAPES = [
   () => "polygon(0% 44%, 24% 6%, 82% 0%, 100% 36%, 82% 100%, 18% 94%)",
 ];
 
+const DEFAULT_LABELS = ["ABOUT ME", "RESUME", "GITHUB LINK", "SOCIALS", "SIDE PROJECTS"];
+
 export default function P5Menu({ onNavigate }) {
   const [active, setActive] = useState(() => {
     const saved = sessionStorage.getItem('p5-menu-active');
@@ -25,6 +28,7 @@ export default function P5Menu({ onNavigate }) {
   const [mounted, setMounted] = useState(false);
   const isFirstRenderAudio = useRef(true);
   const [animKey, setAnimKey] = useState(0);
+  const { get } = useContent();
 
   const activate = (idx) => {
     setActive(idx);
@@ -48,14 +52,17 @@ export default function P5Menu({ onNavigate }) {
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === "ArrowUp")   activate(Math.max(0, active - 1));
-      if (e.key === "ArrowDown") activate(Math.min(ITEMS.length - 1, active + 1));
+      if (e.key === "ArrowDown") activate(Math.min(DEFAULT_ITEMS.length - 1, active + 1));
       if (e.key === "Enter") {
-        onNavigate?.(ITEMS[active].page);
+        onNavigate?.(DEFAULT_ITEMS[active].page);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [active]);
+
+  const nameTagLine1 = get('menu.nametag.line1', "Francisco's");
+  const nameTagLine2 = get('menu.nametag.line2', 'persona');
 
   return (
     <>
@@ -248,17 +255,18 @@ export default function P5Menu({ onNavigate }) {
 
       <div className="p5-overlay">
         <div className="p5-name-tag">
-          <span>Francisco's</span>
-          <span>persona</span>
+          <span>{nameTagLine1}</span>
+          <span>{nameTagLine2}</span>
         </div>
 
         <nav className="p5-menu">
-          {ITEMS.map((item, i) => {
+          {DEFAULT_ITEMS.map((item, i) => {
             const isActive = active === i;
             const dist = Math.abs(i - active);
             const opacity = isActive ? 1 : Math.max(0.5, 1 - dist * 0.2);
-            const estW = item.label.length * item.fontSize * 0.6 + 80;
-            const estH = item.fontSize * 0.94;
+            const label = get(`menu.items.${i}.label`, DEFAULT_LABELS[i]);
+            const estW = label.length * DEFAULT_ITEMS[i].fontSize * 0.6 + 80;
+            const estH = DEFAULT_ITEMS[i].fontSize * 0.94;
             const clipFn = CLIP_SHAPES[i] ?? CLIP_SHAPES[0];
 
             return (
@@ -300,7 +308,7 @@ export default function P5Menu({ onNavigate }) {
                   />
                   <div className="p5-label-wrap" style={{ opacity }}>
                     <span className="p5-label-base p5-label-dark" style={{ fontSize: item.fontSize }}>
-                      {item.label}
+                      {label}
                     </span>
                     <span
                       className="p5-label-base p5-label-bright"
@@ -309,7 +317,7 @@ export default function P5Menu({ onNavigate }) {
                         clipPath: clipFn(estW, estH),
                       }}
                     >
-                      {item.label}
+                      {label}
                     </span>
                   </div>
                 </div>

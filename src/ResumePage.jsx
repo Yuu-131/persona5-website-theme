@@ -1,16 +1,17 @@
 import { useEffect, useState, useRef } from "react";
 import { playSelectSound } from "./utils/audio.js";
+import { useContent } from "./utils/useContent.js";
 import { useNavigate } from "react-router-dom";
 import mainVideo from "./assets/main1.mp4";
 
-const ITEMS = [
-  { id: "i", badge: "I", title: "EDUCATION", subtitle: "IFPB Itaporanga / IT Technician", rank: 3 },
-  { id: "ii", badge: "II", title: "SKILLS", subtitle: "Java / JavaScript / Logic", rank: 4 },
-  { id: "iii", badge: "III", title: "PROJECTS", subtitle: "Sales Mgmt / Calc / JS Exercises", rank: 4 },
-  { id: "iv", badge: "IV", title: "FOCUS", subtitle: "Backend / Frontend", rank: 5 },
+const DEFAULT_ITEMS = [
+  { id: "i", badge: "I", title: "EDUCATION", subtitle: "IFPB Itaporanga / IT Technician", rank: "3" },
+  { id: "ii", badge: "II", title: "SKILLS", subtitle: "Java / JavaScript / Logic", rank: "4" },
+  { id: "iii", badge: "III", title: "PROJECTS", subtitle: "Sales Mgmt / Calc / JS Exercises", rank: "4" },
+  { id: "iv", badge: "IV", title: "FOCUS", subtitle: "Backend / Frontend", rank: "5" },
 ];
 
-const EDUCATION_ROWS = [
+const DEFAULT_EDUCATION_ROWS = [
   { index: "01", title: "IFPB Campus Itaporanga", status: "3rd Yr" },
   { index: "02", title: "IT Technician", status: "Active" },
   { index: "03", title: "Java + JavaScript", status: "Learning" },
@@ -22,6 +23,24 @@ export default function ResumePage() {
   const [active, setActive] = useState(1);
   const [mounted, setMounted] = useState(false);
   const isFirstRenderAudio = useRef(true);
+  const { get } = useContent();
+
+  const items = DEFAULT_ITEMS.map((item, i) => ({
+    ...item,
+    title: get(`resume.items.${i}.title`, item.title),
+    subtitle: get(`resume.items.${i}.subtitle`, item.subtitle),
+    rank: get(`resume.items.${i}.rank`, item.rank),
+  }));
+
+  const educationRows = DEFAULT_EDUCATION_ROWS.map((row, i) => ({
+    ...row,
+    title: get(`resume.education.${i}.title`, row.title),
+    status: get(`resume.education.${i}.status`, row.status),
+  }));
+
+  const detailTitle = get('resume.detail.title', 'EDUCATION LOG');
+  const detailBullet0 = get('resume.detail.bullet.0', '- Born to backend.');
+  const detailBullet1 = get('resume.detail.bullet.1', '- Focus: Java and Javascript.');
 
   useEffect(() => {
     if (isFirstRenderAudio.current) {
@@ -39,7 +58,7 @@ export default function ResumePage() {
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === "ArrowUp") setActive((i) => Math.max(0, i - 1));
-      if (e.key === "ArrowDown") setActive((i) => Math.min(ITEMS.length - 1, i + 1));
+      if (e.key === "ArrowDown") setActive((i) => Math.min(DEFAULT_ITEMS.length - 1, i + 1));
       if (e.key === "ArrowLeft") navigate(-1);
       if (e.key === "Escape" || e.key === "Backspace") navigate(-1);
     };
@@ -382,7 +401,7 @@ export default function ResumePage() {
       <div className="resume-overlay">
         <div className="resume-stack">
           <div className={`resume-list-tag${mounted ? " mounted" : ""}`}>LIST</div>
-          {ITEMS.map((item, index) => (
+          {items.map((item, index) => (
             <div
               key={item.id}
               className={`resume-card-wrap${active === index ? " active" : ""}${mounted ? " mounted" : ""}`}
@@ -417,12 +436,12 @@ export default function ResumePage() {
           <div className="resume-detail-panel">
             <div className="resume-detail-top">
               <div className="resume-detail-top-index">01</div>
-              <div className="resume-detail-top-title">EDUCATION LOG</div>
+              <div className="resume-detail-top-title">{detailTitle}</div>
               <div className="resume-detail-top-progress">4/4</div>
             </div>
 
             <div className="resume-detail-list">
-              {EDUCATION_ROWS.map((row) => (
+              {educationRows.map((row) => (
                 <div className="resume-detail-row" key={row.index}>
                   <div className="resume-detail-row-index">{row.index}</div>
                   <div className="resume-detail-row-title">{row.title}</div>
@@ -434,8 +453,8 @@ export default function ResumePage() {
             <div className="resume-detail-bottom">
               <div className="resume-detail-bottom-title">DETAILS</div>
               <div className="resume-detail-bullets">
-                <div className="resume-detail-bullet">- Born to backend.</div>
-                <div className="resume-detail-bullet">- Focus: Java and Javascript.</div>
+                <div className="resume-detail-bullet">{detailBullet0}</div>
+                <div className="resume-detail-bullet">{detailBullet1}</div>
               </div>
             </div>
           </div>
